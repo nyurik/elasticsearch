@@ -117,6 +117,9 @@ dependencies {
   compile "org.locationtech.spatial4j:spatial4j:${versions.spatial4j}", optional
   compile "org.locationtech.jts:jts-core:${versions.jts}", optional
 
+  // Google openlocation support (plus codes)
+  compile "com.google.openlocationcode:openlocationcode:1.0.1"
+
   // logging
   compile "org.apache.logging.log4j:log4j-api:${versions.log4j}"
   compile "org.apache.logging.log4j:log4j-core:${versions.log4j}", optional
