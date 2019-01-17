@@ -18,45 +18,23 @@
  */
 package org.elasticsearch.search.aggregations.bucket.geogrid;
 
-import org.apache.lucene.index.IndexWriter;
 import org.elasticsearch.common.geo.GeoHashUtils;
 import org.elasticsearch.common.io.stream.Writeable;
 import org.elasticsearch.search.aggregations.InternalAggregations;
-import org.elasticsearch.test.InternalMultiBucketAggregationTestCase;
-import org.elasticsearch.search.aggregations.ParsedMultiBucketAggregation;
 import org.elasticsearch.search.aggregations.pipeline.PipelineAggregator;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class InternalGeoHashGridTests extends InternalMultiBucketAggregationTestCase<GeoHashGrid> {
+public class InternalGeoHashGridTests extends InternalGeoGridTestBase<GeoHashGridBucket, GeoHashGrid> {
 
-    @Override
-    protected int minNumberOfBuckets() {
-        return 1;
+    public InternalGeoHashGridTests() {
+        super(4);
     }
 
     @Override
-    protected int maxNumberOfBuckets() {
-        return 3;
-    }
-
-    @Override
-    protected GeoHashGrid createTestInstance(String name,
-                                             List<PipelineAggregator> pipelineAggregators,
-                                             Map<String, Object> metaData,
-                                             InternalAggregations aggregations) {
-        int size = randomNumberOfBuckets();
-        List<InternalGeoGridBucket> buckets = new ArrayList<>(size);
-        for (int i = 0; i < size; i++) {
-            double latitude = randomDoubleBetween(-90.0, 90.0, false);
-            double longitude = randomDoubleBetween(-180.0, 180.0, false);
-
-            long geoHashAsLong = GeoHashUtils.longEncode(longitude, latitude, 4);
-            buckets.add(new GeoHashGridBucket(geoHashAsLong, randomInt(IndexWriter.MAX_DOCS), aggregations));
-        }
+    protected GeoHashGrid newGeoGrid(String name, int size, List<InternalGeoGridBucket> buckets,
+                                     List<PipelineAggregator> pipelineAggregators, Map<String, Object> metaData) {
         return new GeoHashGrid(name, size, buckets, pipelineAggregators, metaData);
     }
 
@@ -66,80 +44,12 @@ public class InternalGeoHashGridTests extends InternalMultiBucketAggregationTest
     }
 
     @Override
-    protected void assertReduced(GeoHashGrid reduced, List<GeoHashGrid> inputs) {
-        Map<Long, List<GeoHashGridBucket>> map = new HashMap<>();
-        for (GeoHashGrid input : inputs) {
-            for (GeoGrid.Bucket bucket : input.getBuckets()) {
-                GeoHashGridBucket internalBucket = (GeoHashGridBucket) bucket;
-                List<GeoHashGridBucket> buckets = map.get(internalBucket.geohashAsLong);
-                if (buckets == null) {
-                    map.put(internalBucket.geohashAsLong, buckets = new ArrayList<>());
-                }
-                buckets.add(internalBucket);
-            }
-        }
-        List<GeoHashGridBucket> expectedBuckets = new ArrayList<>();
-        for (Map.Entry<Long, List<GeoHashGridBucket>> entry : map.entrySet()) {
-            long docCount = 0;
-            for (GeoHashGridBucket bucket : entry.getValue()) {
-                docCount += bucket.docCount;
-            }
-            expectedBuckets.add(new GeoHashGridBucket(entry.getKey(), docCount, InternalAggregations.EMPTY));
-        }
-        expectedBuckets.sort((first, second) -> {
-            int cmp = Long.compare(second.docCount, first.docCount);
-            if (cmp == 0) {
-                return second.compareTo(first);
-            }
-            return cmp;
-        });
-        int requestedSize = inputs.get(0).getRequiredSize();
-        expectedBuckets = expectedBuckets.subList(0, Math.min(requestedSize, expectedBuckets.size()));
-        assertEquals(expectedBuckets.size(), reduced.getBuckets().size());
-        for (int i = 0; i < reduced.getBuckets().size(); i++) {
-            GeoGrid.Bucket expected = expectedBuckets.get(i);
-            GeoGrid.Bucket actual = reduced.getBuckets().get(i);
-            assertEquals(expected.getDocCount(), actual.getDocCount());
-            assertEquals(expected.getKey(), actual.getKey());
-        }
+    protected GeoHashGridBucket newGeoGridBucket(Long key, long docCount, InternalAggregations aggregations) {
+        return new GeoHashGridBucket(key, docCount, aggregations);
     }
 
     @Override
-    protected Class<? extends ParsedMultiBucketAggregation> implementationClass() {
-        return ParsedGeoGrid.class;
+    protected long pointToHash(double lng, double lat, int precision) {
+        return GeoHashUtils.longEncode(lng, lat, precision);
     }
-
-    @Override
-    protected GeoHashGrid mutateInstance(GeoHashGrid instance) {
-        String name = instance.getName();
-        int size = instance.getRequiredSize();
-        List<InternalGeoGridBucket> buckets = instance.getBuckets();
-        List<PipelineAggregator> pipelineAggregators = instance.pipelineAggregators();
-        Map<String, Object> metaData = instance.getMetaData();
-        switch (between(0, 3)) {
-        case 0:
-            name += randomAlphaOfLength(5);
-            break;
-        case 1:
-            buckets = new ArrayList<>(buckets);
-            buckets.add(
-                    new GeoHashGridBucket(randomNonNegativeLong(), randomInt(IndexWriter.MAX_DOCS), InternalAggregations.EMPTY));
-            break;
-        case 2:
-            size = size + between(1, 10);
-            break;
-        case 3:
-            if (metaData == null) {
-                metaData = new HashMap<>(1);
-            } else {
-                metaData = new HashMap<>(instance.getMetaData());
-            }
-            metaData.put(randomAlphaOfLength(15), randomInt());
-            break;
-        default:
-            throw new AssertionError("Illegal randomisation branch");
-        }
-        return new GeoHashGrid(name, size, buckets, pipelineAggregators, metaData);
-    }
-
 }
