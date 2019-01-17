@@ -41,8 +41,9 @@ import static java.util.Collections.unmodifiableList;
  * All geohashes in a grid are of the same precision and held internally as a single long
  * for efficiency's sake.
  */
-public abstract class InternalGeoGrid<B extends InternalGeoGridBucket> extends InternalMultiBucketAggregation<InternalGeoGrid, InternalGeoGridBucket> implements
-    GeoGrid {
+public abstract class InternalGeoGrid<B extends InternalGeoGridBucket>
+    extends InternalMultiBucketAggregation<InternalGeoGrid, InternalGeoGridBucket>
+    implements GeoGrid {
 
     protected final int requiredSize;
     protected final List<InternalGeoGridBucket> buckets;

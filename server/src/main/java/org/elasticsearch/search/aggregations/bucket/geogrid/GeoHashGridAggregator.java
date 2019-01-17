@@ -40,7 +40,8 @@ public class GeoHashGridAggregator extends GeoGridAggregator<GeoHashGrid> {
     }
 
     @Override
-    GeoHashGrid buildAggregation(String name, int requiredSize, List<InternalGeoGridBucket> buckets, List<PipelineAggregator> pipelineAggregators, Map<String, Object> metaData) {
+    GeoHashGrid buildAggregation(String name, int requiredSize, List<InternalGeoGridBucket> buckets,
+                                 List<PipelineAggregator> pipelineAggregators, Map<String, Object> metaData) {
         return new GeoHashGrid(name, requiredSize, buckets, pipelineAggregators, metaData);
     }
 

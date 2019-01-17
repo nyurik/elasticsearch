@@ -25,7 +25,6 @@ import org.elasticsearch.search.aggregations.AggregatorFactory;
 import org.elasticsearch.search.aggregations.InternalAggregation;
 import org.elasticsearch.search.aggregations.NonCollectingAggregator;
 import org.elasticsearch.search.aggregations.pipeline.PipelineAggregator;
-import org.elasticsearch.search.aggregations.support.ValuesSource;
 import org.elasticsearch.search.aggregations.support.ValuesSource.GeoPoint;
 import org.elasticsearch.search.aggregations.support.ValuesSourceAggregatorFactory;
 import org.elasticsearch.search.aggregations.support.ValuesSourceConfig;
@@ -36,7 +35,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-public class GeoHashGridAggregatorFactory extends ValuesSourceAggregatorFactory<ValuesSource.GeoPoint, GeoHashGridAggregatorFactory> {
+public class GeoHashGridAggregatorFactory extends ValuesSourceAggregatorFactory<GeoPoint, GeoHashGridAggregatorFactory> {
 
     private final int precision;
     private final int requiredSize;
@@ -65,7 +64,7 @@ public class GeoHashGridAggregatorFactory extends ValuesSourceAggregatorFactory<
     }
 
     @Override
-    protected Aggregator doCreateInternal(final ValuesSource.GeoPoint valuesSource, Aggregator parent, boolean collectsFromSingleBucket,
+    protected Aggregator doCreateInternal(final GeoPoint valuesSource, Aggregator parent, boolean collectsFromSingleBucket,
             List<PipelineAggregator> pipelineAggregators, Map<String, Object> metaData) throws IOException {
         if (collectsFromSingleBucket == false) {
             return asMultiBucketAggregator(this, context, parent);

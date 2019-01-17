@@ -33,8 +33,6 @@ import java.util.Map;
  */
 public class GeoHashGrid extends InternalGeoGrid<GeoHashGridBucket> {
 
-    private static final String NAME = "geohash_grid";
-
     GeoHashGrid(String name, int requiredSize, List<InternalGeoGridBucket> buckets,
                 List<PipelineAggregator> pipelineAggregators, Map<String, Object> metaData) {
         super(name, requiredSize, buckets, pipelineAggregators, metaData);
@@ -66,6 +64,6 @@ public class GeoHashGrid extends InternalGeoGrid<GeoHashGridBucket> {
 
     @Override
     public String getWriteableName() {
-        return NAME;
+        return GeoHashGridAggregationBuilder.NAME;
     }
 }

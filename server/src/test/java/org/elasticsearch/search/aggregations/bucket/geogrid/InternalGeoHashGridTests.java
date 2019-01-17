@@ -24,7 +24,6 @@ import org.elasticsearch.common.io.stream.Writeable;
 import org.elasticsearch.search.aggregations.InternalAggregations;
 import org.elasticsearch.test.InternalMultiBucketAggregationTestCase;
 import org.elasticsearch.search.aggregations.ParsedMultiBucketAggregation;
-import org.elasticsearch.search.aggregations.bucket.geogrid.GeoHashGrid.Bucket;
 import org.elasticsearch.search.aggregations.pipeline.PipelineAggregator;
 
 import java.util.ArrayList;
@@ -50,13 +49,13 @@ public class InternalGeoHashGridTests extends InternalMultiBucketAggregationTest
                                              Map<String, Object> metaData,
                                              InternalAggregations aggregations) {
         int size = randomNumberOfBuckets();
-        List<GeoHashGrid.Bucket> buckets = new ArrayList<>(size);
+        List<InternalGeoGridBucket> buckets = new ArrayList<>(size);
         for (int i = 0; i < size; i++) {
             double latitude = randomDoubleBetween(-90.0, 90.0, false);
             double longitude = randomDoubleBetween(-180.0, 180.0, false);
 
             long geoHashAsLong = GeoHashUtils.longEncode(longitude, latitude, 4);
-            buckets.add(new GeoHashGrid.Bucket(geoHashAsLong, randomInt(IndexWriter.MAX_DOCS), aggregations));
+            buckets.add(new GeoHashGridBucket(geoHashAsLong, randomInt(IndexWriter.MAX_DOCS), aggregations));
         }
         return new GeoHashGrid(name, size, buckets, pipelineAggregators, metaData);
     }
@@ -68,24 +67,24 @@ public class InternalGeoHashGridTests extends InternalMultiBucketAggregationTest
 
     @Override
     protected void assertReduced(GeoHashGrid reduced, List<GeoHashGrid> inputs) {
-        Map<Long, List<GeoHashGrid.Bucket>> map = new HashMap<>();
+        Map<Long, List<GeoHashGridBucket>> map = new HashMap<>();
         for (GeoHashGrid input : inputs) {
             for (GeoGrid.Bucket bucket : input.getBuckets()) {
-                GeoHashGrid.Bucket internalBucket = (GeoHashGrid.Bucket) bucket;
-                List<GeoHashGrid.Bucket> buckets = map.get(internalBucket.geohashAsLong);
+                GeoHashGridBucket internalBucket = (GeoHashGridBucket) bucket;
+                List<GeoHashGridBucket> buckets = map.get(internalBucket.geohashAsLong);
                 if (buckets == null) {
                     map.put(internalBucket.geohashAsLong, buckets = new ArrayList<>());
                 }
                 buckets.add(internalBucket);
             }
         }
-        List<GeoHashGrid.Bucket> expectedBuckets = new ArrayList<>();
-        for (Map.Entry<Long, List<GeoHashGrid.Bucket>> entry : map.entrySet()) {
+        List<GeoHashGridBucket> expectedBuckets = new ArrayList<>();
+        for (Map.Entry<Long, List<GeoHashGridBucket>> entry : map.entrySet()) {
             long docCount = 0;
-            for (GeoHashGrid.Bucket bucket : entry.getValue()) {
+            for (GeoHashGridBucket bucket : entry.getValue()) {
                 docCount += bucket.docCount;
             }
-            expectedBuckets.add(new GeoHashGrid.Bucket(entry.getKey(), docCount, InternalAggregations.EMPTY));
+            expectedBuckets.add(new GeoHashGridBucket(entry.getKey(), docCount, InternalAggregations.EMPTY));
         }
         expectedBuckets.sort((first, second) -> {
             int cmp = Long.compare(second.docCount, first.docCount);
@@ -114,7 +113,7 @@ public class InternalGeoHashGridTests extends InternalMultiBucketAggregationTest
     protected GeoHashGrid mutateInstance(GeoHashGrid instance) {
         String name = instance.getName();
         int size = instance.getRequiredSize();
-        List<Bucket> buckets = instance.getBuckets();
+        List<InternalGeoGridBucket> buckets = instance.getBuckets();
         List<PipelineAggregator> pipelineAggregators = instance.pipelineAggregators();
         Map<String, Object> metaData = instance.getMetaData();
         switch (between(0, 3)) {
@@ -124,7 +123,7 @@ public class InternalGeoHashGridTests extends InternalMultiBucketAggregationTest
         case 1:
             buckets = new ArrayList<>(buckets);
             buckets.add(
-                    new GeoHashGrid.Bucket(randomNonNegativeLong(), randomInt(IndexWriter.MAX_DOCS), InternalAggregations.EMPTY));
+                    new GeoHashGridBucket(randomNonNegativeLong(), randomInt(IndexWriter.MAX_DOCS), InternalAggregations.EMPTY));
             break;
         case 2:
             size = size + between(1, 10);

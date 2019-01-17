@@ -113,7 +113,8 @@ public abstract class GeoGridAggregator<T extends InternalGeoGrid> extends Bucke
         }
 
         @Override
-        InternalGeoGridBucket buildBucket(InternalGeoGridBucket bucket, long geoHashAsLong, long docCount, InternalAggregations aggregations) {
+        InternalGeoGridBucket buildBucket(InternalGeoGridBucket bucket, long geoHashAsLong, long docCount,
+                                          InternalAggregations aggregations) {
             OrdinalBucket ordBucket = new OrdinalBucket(bucket);
             ordBucket.geohashAsLong = geoHashAsLong;
             ordBucket.docCount = docCount;

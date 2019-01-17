@@ -47,7 +47,8 @@ public class GeoHashGridAggregationBuilder extends GeoGridAggregationBuilder {
         super(in);
     }
 
-    private GeoHashGridAggregationBuilder(GeoHashGridAggregationBuilder clone, AggregatorFactories.Builder factoriesBuilder, Map<String, Object> metaData) {
+    private GeoHashGridAggregationBuilder(GeoHashGridAggregationBuilder clone,
+                                          AggregatorFactories.Builder factoriesBuilder, Map<String, Object> metaData) {
         super(clone, factoriesBuilder, metaData);
     }
 
