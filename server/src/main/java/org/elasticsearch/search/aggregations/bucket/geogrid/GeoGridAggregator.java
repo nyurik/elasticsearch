@@ -39,7 +39,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Aggregates data expressed as GeoHash longs (for efficiency's sake) but formats results as Geohash strings.
+ * Aggregates data expressed as long hashes (for efficiency's sake) but formats results as strings specific to aggregation.
  */
 public abstract class GeoGridAggregator<T extends InternalGeoGrid> extends BucketsAggregator {
 

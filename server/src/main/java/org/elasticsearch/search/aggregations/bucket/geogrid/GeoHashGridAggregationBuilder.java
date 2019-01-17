@@ -25,6 +25,11 @@ import org.elasticsearch.common.xcontent.ObjectParser;
 import org.elasticsearch.common.xcontent.XContentParser;
 import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregatorFactories;
+import org.elasticsearch.search.aggregations.AggregatorFactory;
+import org.elasticsearch.search.aggregations.support.ValuesSource;
+import org.elasticsearch.search.aggregations.support.ValuesSourceAggregatorFactory;
+import org.elasticsearch.search.aggregations.support.ValuesSourceConfig;
+import org.elasticsearch.search.internal.SearchContext;
 
 import java.io.IOException;
 import java.util.Map;
@@ -59,6 +64,16 @@ public class GeoHashGridAggregationBuilder extends GeoGridAggregationBuilder {
 
     public static GeoGridAggregationBuilder parse(String aggregationName, XContentParser parser) throws IOException {
         return PARSER.parse(parser, new GeoHashGridAggregationBuilder(aggregationName), null);
+    }
+
+    @Override
+    protected ValuesSourceAggregatorFactory<ValuesSource.GeoPoint, ?> newGeoGridAggregatorFactory(
+        String name, ValuesSourceConfig<ValuesSource.GeoPoint> config, int precision, int requiredSize, int shardSize,
+        SearchContext context, AggregatorFactory<?> parent, AggregatorFactories.Builder subFactoriesBuilder,
+        Map<String, Object> metaData
+    ) throws IOException {
+        return new GeoHashGridAggregatorFactory(name, config, precision, requiredSize, shardSize, context, parent,
+            subFactoriesBuilder, metaData);
     }
 
     @Override

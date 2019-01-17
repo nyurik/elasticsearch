@@ -23,19 +23,20 @@ import org.elasticsearch.search.aggregations.bucket.MultiBucketsAggregation;
 import java.util.List;
 
 /**
- * A {@code geohash_grid} aggregation. Defines multiple buckets, each representing a cell in a geo-grid of a specific
- * precision.
+ * A {@code geohash_grid} or similar aggregation. Defines multiple buckets, each representing a cell in a geo-grid
+ * of a specific precision.
  */
 public interface GeoGrid extends MultiBucketsAggregation {
 
     /**
-     * A bucket that is associated with a {@code geohash_grid} cell. The key of the bucket is the {@code geohash} of the cell
+     * A bucket that is associated with a {@code geohash_grid} (or similar aggregation) cell.
+     * The key of the bucket is a long hash, specific to the aggregation type.
      */
     interface Bucket extends MultiBucketsAggregation.Bucket {
     }
 
     /**
-     * @return  The buckets of this aggregation (each bucket representing a geohash grid cell)
+     * @return  The buckets of this aggregation (each bucket representing a geo grid cell)
      */
     @Override
     List<? extends Bucket> getBuckets();

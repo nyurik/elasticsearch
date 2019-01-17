@@ -88,6 +88,11 @@ public abstract class GeoGridAggregationBuilder extends ValuesSourceAggregationB
         shardSize = in.readVInt();
     }
 
+    protected abstract ValuesSourceAggregatorFactory<ValuesSource.GeoPoint,?> newGeoGridAggregatorFactory(
+        String name, ValuesSourceConfig<ValuesSource.GeoPoint> config, int precision, int requiredSize, int shardSize,
+        SearchContext context, AggregatorFactory<?> parent, Builder subFactoriesBuilder, Map<String, Object> metaData
+    ) throws IOException;
+
     @Override
     protected void innerWriteTo(StreamOutput out) throws IOException {
         out.writeVInt(precision);
@@ -152,7 +157,8 @@ public abstract class GeoGridAggregationBuilder extends ValuesSourceAggregationB
         if (shardSize < requiredSize) {
             shardSize = requiredSize;
         }
-        return new GeoHashGridAggregatorFactory(name, config, precision, requiredSize, shardSize, context, parent,
+
+        return newGeoGridAggregatorFactory(name, config, precision, requiredSize, shardSize, context, parent,
                 subFactoriesBuilder, metaData);
     }
 
